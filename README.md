@@ -336,6 +336,48 @@ You will see Zeppelin Interactive data analytics web-site of your cluster:
 
 
 
+# Extras
+
+## Using Python without pyspark:
+
+Install on Cluster:
+
+```
+sudo pip install py4j
+``` 
+
+Access to python (not pyspark):
+
+```
+python 
+```
+
+Create this function:
+
+```
+def configure_spark(spark_home=None, pyspark_python=None):
+	import os, sys
+	spark_home = spark_home or "/usr/lib/spark/"
+	os.environ['SPARK_HOME'] = spark_home
+	# Add the PySpark directories to the Python path:
+	sys.path.insert(1, os.path.join(spark_home, 'python'))
+	sys.path.insert(1, os.path.join(spark_home, 'python', 'pyspark'))
+	sys.path.insert(1, os.path.join(spark_home, 'python', 'build'))
+	# If PySpark isn't specified, use currently running Python binary:
+	pyspark_python = pyspark_python or sys.executable
+	os.environ['PYSPARK_PYTHON'] = pyspark_python
+
+```
+
+And now, we can use python and spark:
+
+```
+configure_spark("/usr/lib/spark/")
+
+from pyspark import SparkContext
+...
+
+```
 
 
 
