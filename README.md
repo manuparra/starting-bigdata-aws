@@ -336,6 +336,10 @@ You will see Zeppelin Interactive data analytics web-site of your cluster:
 
 
 
+## 
+
+
+
 # Extras
 
 ## Using Python without pyspark:
@@ -378,6 +382,58 @@ from pyspark import SparkContext
 ...
 
 ```
+
+
+
+
+# BigData development environment with Spark and Hadoop
+
+Download the virtual machine with the development environment [here](https://drive.google.com/file/d/0ByPBMv-S_GMEakRCVVRTejZKVm8/view?usp=sharing). (approx: 4 GB)
+
+Credentials to the Virtual Machine are:
+
+- User: root
+- Key: sparkR
+
+Requirements of the Virtual Machine:
+
+- VIRTUALBOX installed, available at: https://www.virtualbox.org/wiki/Downloads 
+- At least 2GB of RAM for the Virtual Machine (datasets must be less than 2GB).
+- PC must be 64bit and at least 4GB of RAM (2GB for MVirtual and another 2GB for PC)
+- Compatible with Windows, Mac OSX and Linux
+
+## Connecting to the development environment from outside of the VM
+
+Virtual Machine exposes a few ports:
+
+- shh on 22000 
+- Jupyter notebooks on 25980  (for Spark Python development).
+- RStudio on 8787 (for SparkR develpment)
+
+
+Connecting with SSH:
+
+```
+ssh -p 22000 root@localhost
+```
+
+Connecting  with Jupyter Notebooks : 
+
+```
+http://localhost:25980
+```
+
+![imgJupyter](https://camo.githubusercontent.com/db9d5bc4e6f3b153f5bf921f90db7c237a212cf0/68747470733a2f2f73697465732e676f6f676c652e636f6d2f736974652f6d616e7570617272612f686f6d652f6a7570797465722e6a7067)
+
+Connecting with RStudio: 
+
+```
+http://localhost:8787
+```
+
+![imgRstudio](https://camo.githubusercontent.com/3d08b1352af5f25687fb934ff0a485e00b85f465/68747470733a2f2f73697465732e676f6f676c652e636f6d2f736974652f6d616e7570617272612f686f6d652f7273747564696f2e6a7067)
+
+
 
 
 
