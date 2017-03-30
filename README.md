@@ -550,6 +550,34 @@ Check Memory configuration [here](http://docs.aws.amazon.com/emr/latest/ReleaseG
 
 Note that the property ``spark.yarn.submit.waitAppCompletion`` with the step definitions. When this property is set to false, the client submits the application and exits, not waiting for the application to complete. This setting allows you to submit multiple applications to be executed simultaneously by the cluster and is only available in cluster mode.
 
+### Application in R
+
+
+Connect to your created Cluster via SSH and save the following code in your Cluster home with the name ``test.R``:
+
+```
+args <- commandArgs(trailingOnly = TRUE)
+
+filename <- args[1]
+num <- args[2]
+
+data <- textFile(sc, filename)
+
+brief <- take(data,num)
+
+saveAsTextFile(brief,"s3n://datasets-preditiva/results/test-submit-10_ECBDL14_10tst.data")
+
+```
+
+Now execute this command:
+
+```
+spark-submit --deploy-mode cluster  --master yarn  --num-executors 5  --executor-cores 5  --executor-memory 4g  --conf spark.yarn.submit.waitAppCompletion=false test.R s3://datasets-preditiva/inputtext.txt 10
+```
+
+
+
+
 
 ## Executing algorithms with AWS EMR Steps
 
@@ -906,7 +934,60 @@ MachineLearning Lib contains:
   - stochastic gradient descent
   - limited-memory BFGS (L-BFGS)
 
-tbc.
+## Classification
+
+Examples from http://spark.apache.org/docs/latest/ml-classification-regression.html
+
+### Binomial logistic regression
+
+Python:
+
+```
+from pyspark.ml.classification import LogisticRegression
+
+# Load training data
+training = spark.read.format("libsvm").load("data/mllib/sample_libsvm_data.txt")
+
+lr = LogisticRegression(maxIter=10, regParam=0.3, elasticNetParam=0.8)
+
+# Fit the model
+lrModel = lr.fit(training)
+
+# Print the coefficients and intercept for logistic regression
+print("Coefficients: " + str(lrModel.coefficients))
+print("Intercept: " + str(lrModel.intercept))
+
+# We can also use the multinomial family for binary classification
+mlr = LogisticRegression(maxIter=10, regParam=0.3, elasticNetParam=0.8, family="multinomial")
+
+# Fit the model
+mlrModel = mlr.fit(training)
+
+# Print the coefficients and intercepts for logistic regression with multinomial family
+print("Multinomial coefficients: " + str(mlrModel.coefficientMatrix))
+print("Multinomial intercepts: " + str(mlrModel.interceptVector))
+```
+
+R:
+
+```
+# Load training data
+df <- read.df("data/mllib/sample_libsvm_data.txt", source = "libsvm")
+training <- df
+test <- df
+
+# Fit an binomial logistic regression model with spark.logit
+model <- spark.logit(training, label ~ features, maxIter = 10, regParam = 0.3, elasticNetParam = 0.8)
+
+# Model summary
+summary(model)
+
+# Prediction
+predictions <- predict(model, test)
+showDF(predictions)
+
+```
+
 
 # Data Streaming with Spark
 
@@ -965,6 +1046,105 @@ http://localhost:8787
 
 
 # Starting with MongoDB
+
+## Connecting MongoDB with Spark
+
+
+Read https://docs.mongodb.com/manual/tutorial/install-mongodb-on-amazon/
+
+First, install in a EC2 instance MongoDB:
+
+```
+sudo vi /etc/yum.repos.d/mongodb-org.repo
+```
+
+Copy the next code:
+
+´´´
+[mongodb-org-3.4]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc
+´´´
+
+and then:
+
+```
+sudo yum update
+```
+
+and:
+
+```
+sudo yum install -y mongodb-org
+```
+
+
+Start the service:
+
+```
+sudo service mongod start
+```
+
+### Creating a dataset from mongoDB
+
+Download the next [dataset](http://www.barchartmarketdata.com/data-samples/mstf.csv) on your instance home:
+
+```
+wget http://www.barchartmarketdata.com/data-samples/mstf.csv;
+```
+
+
+### Importing data on MongoDB
+
+```
+mongoimport mstf.csv --type csv --headerline -d marketdata -c minbars
+```
+
+Check if dataset is imported:
+
+```
+mongo 
+```
+
+Execute the next:
+
+```
+
+use marketdata  
+
+db.minbars.findOne()
+```
+
+If it returns results, dataset has been imported.
+
+### Connecting to MongoDB from Spark
+
+MongoDB require the mongoDB package:  org.mongodb.spark:mongo-spark-connector_2.10:2.0.0
+
+Check the next:
+
+```
+pyspark   --conf "spark.mongodb.input.uri=mongodb://172.31.30.138/marketdata.minbars" --conf "spark.mongodb.output.uri=mongodb://172.31.30.138/marketdata.minbars"  
+```
+
+
+
+
+```
+df = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri","mongodb://172.31.30.138/marketdata.minbars").load()
+```
+
+
+
+
+
+
+
+## Introduction
+
 
 MongoDB is an open-source database developed by MongoDB, Inc. 
 
