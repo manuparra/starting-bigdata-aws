@@ -1060,14 +1060,15 @@ sudo vi /etc/yum.repos.d/mongodb-org.repo
 
 Copy the next code:
 
-´´´
+```
 [mongodb-org-3.4]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.4/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc
-´´´
+
+```
 
 and then:
 
