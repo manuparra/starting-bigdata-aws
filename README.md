@@ -1123,16 +1123,33 @@ If it returns results, dataset has been imported.
 
 ### Connecting to MongoDB from Spark
 
-MongoDB require the mongoDB package:  org.mongodb.spark:mongo-spark-connector_2.10:2.0.0
+
+
+Why I use MongoDB Server on ``172.31.30.138``? This is the IP of the MasterNode, if you require to connect to EC2 Instance, change the IP as needed and remember add the Rule to Security Groups (Inbound Rule, add port 27017 from Anywhere).
+
+How do I change listening IP on MongoDB?
+
+```
+vi /etc/mongodb.conf
+```
+
+and change ``bind=127.0.0.1`` to ``your Server IP``.
+
+To set MongoDB and make available,  mongoDB requiere the package:  org.mongodb.spark:mongo-spark-connector_2.10:2.0.0
 
 Check the next:
 
 ```
-pyspark   --conf "spark.mongodb.input.uri=mongodb://172.31.30.138/marketdata.minbars" --conf "spark.mongodb.output.uri=mongodb://172.31.30.138/marketdata.minbars"  
+pyspark --packages org.mongodb.spark:mongo-spark-connector_2.10:2.0.0  --conf "spark.mongodb.input.uri=mongodb://172.31.30.138/marketdata.minbars" --conf "spark.mongodb.output.uri=mongodb://172.31.30.138/marketdata.minbars"  
 ```
 
+Load MongoDB ``--conf`` Database and Collection (here: /marketdata.minbars --> <database>.<collection>):
 
+```
+df = spark.read.format("com.mongodb.spark.sql.DefaultSource").load()
+```
 
+Load MongoDB specific Database:
 
 ```
 df = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri","mongodb://172.31.30.138/marketdata.minbars").load()
