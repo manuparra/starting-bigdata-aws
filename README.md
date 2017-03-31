@@ -7,9 +7,6 @@
 Table of Contents
 =================
 
-Table of Contents
-=================
-
    * [Table of Contents](#table-of-contents)
       * [Creating IAM credencial required with AWS CLI](#creating-iam-credencial-required-with-aws-cli)
       * [Installing AWS CLI](#installing-aws-cli)
