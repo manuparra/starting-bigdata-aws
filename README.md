@@ -7,7 +7,10 @@
 Table of Contents
 =================
 
-   * [Predictiva. BigData setting up AWS EMR](#predictiva-bigdata-setting-up-aws-emr)
+Table of Contents
+=================
+
+   * [Table of Contents](#table-of-contents)
       * [Creating IAM credencial required with AWS CLI](#creating-iam-credencial-required-with-aws-cli)
       * [Installing AWS CLI](#installing-aws-cli)
          * [Check if AWS CLI is working](#check-if-aws-cli-is-working)
@@ -28,6 +31,7 @@ Table of Contents
    * [Submitting BigData applications to the cluster](#submitting-bigdata-applications-to-the-cluster)
       * [Executing algorithms with spark-submit](#executing-algorithms-with-spark-submit)
          * [Application in Python](#application-in-python)
+         * [Application in R](#application-in-r)
       * [Executing algorithms with AWS EMR Steps](#executing-algorithms-with-aws-emr-steps)
          * [Application in Python](#application-in-python-1)
          * [List steps](#list-steps)
@@ -43,11 +47,28 @@ Table of Contents
             * [Grouping](#grouping)
             * [Aggregating](#aggregating)
    * [Machine Learning examples](#machine-learning-examples)
+      * [Classification](#classification)
+         * [Binomial logistic regression](#binomial-logistic-regression)
+         * [RandomForest](#randomforest)
+         * [Generalized linear regression](#generalized-linear-regression)
    * [Data Streaming with Spark](#data-streaming-with-spark)
+      * [First Example with socketTextStream](#first-example-with-sockettextstream)
+         * [Python:](#python-1)
+         * [Notes with streaming](#notes-with-streaming)
+         * [Streaming sources](#streaming-sources)
+         * [Streaming from SparkSQL](#streaming-from-sparksql)
+         * [Streaming from any source using Structured Streaming Programming](#streaming-from-any-source-using-structured-streaming-programming)
+            * [Creating streaming DataFrames and streaming Datasets](#creating-streaming-dataframes-and-streaming-datasets)
    * [BigData development environment with Spark and Hadoop](#bigdata-development-environment-with-spark-and-hadoop)
       * [Requirements of the Virtual Machine:](#requirements-of-the-virtual-machine)
       * [Connecting to the development environment from outside of the VM](#connecting-to-the-development-environment-from-outside-of-the-vm)
    * [Starting with MongoDB](#starting-with-mongodb)
+      * [Connecting MongoDB with Spark](#connecting-mongodb-with-spark)
+         * [Creating a dataset from mongoDB](#creating-a-dataset-from-mongodb)
+         * [Importing data on MongoDB](#importing-data-on-mongodb)
+         * [Connecting to MongoDB from Spark](#connecting-to-mongodb-from-spark)
+         * [Creating standalone application with MongoDB support:](#creating-standalone-application-with-mongodb-support)
+      * [Introduction](#introduction)
       * [Documents instead row/cols](#documents-instead-rowcols)
          * [Documents datatypes](#documents-datatypes)
    * [Starting with MongoDB](#starting-with-mongodb-1)
