@@ -934,6 +934,11 @@ MachineLearning Lib contains:
   - stochastic gradient descent
   - limited-memory BFGS (L-BFGS)
 
+
+MLLib guide [here](http://spark.apache.org/docs/latest/ml-guide.html)
+
+Here are just a few ML methods; All that can be applied is in the previous link.
+
 ## Classification
 
 Examples from http://spark.apache.org/docs/latest/ml-classification-regression.html
@@ -988,10 +993,348 @@ showDF(predictions)
 
 ```
 
+### RandomForest
+
+Python:
+
+```
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.feature import IndexToString, StringIndexer, VectorIndexer
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+
+# Load and parse the data file, converting it to a DataFrame.
+data = spark.read.format("libsvm").load("data/mllib/sample_libsvm_data.txt")
+
+# Index labels, adding metadata to the label column.
+# Fit on whole dataset to include all labels in index.
+labelIndexer = StringIndexer(inputCol="label", outputCol="indexedLabel").fit(data)
+
+# Automatically identify categorical features, and index them.
+# Set maxCategories so features with > 4 distinct values are treated as continuous.
+featureIndexer =\
+    VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=4).fit(data)
+
+# Split the data into training and test sets (30% held out for testing)
+(trainingData, testData) = data.randomSplit([0.7, 0.3])
+
+# Train a RandomForest model.
+rf = RandomForestClassifier(labelCol="indexedLabel", featuresCol="indexedFeatures", numTrees=10)
+
+# Convert indexed labels back to original labels.
+labelConverter = IndexToString(inputCol="prediction", outputCol="predictedLabel",
+                               labels=labelIndexer.labels)
+
+# Chain indexers and forest in a Pipeline
+pipeline = Pipeline(stages=[labelIndexer, featureIndexer, rf, labelConverter])
+
+# Train model.  This also runs the indexers.
+model = pipeline.fit(trainingData)
+
+# Make predictions.
+predictions = model.transform(testData)
+
+# Select example rows to display.
+predictions.select("predictedLabel", "label", "features").show(5)
+
+# Select (prediction, true label) and compute test error
+evaluator = MulticlassClassificationEvaluator(
+    labelCol="indexedLabel", predictionCol="prediction", metricName="accuracy")
+accuracy = evaluator.evaluate(predictions)
+print("Test Error = %g" % (1.0 - accuracy))
+
+rfModel = model.stages[2]
+print(rfModel)  # summary only
+```
+
+R:
+```
+# Load training data
+df <- read.df("data/mllib/sample_libsvm_data.txt", source = "libsvm")
+training <- df
+test <- df
+
+# Fit a random forest classification model with spark.randomForest
+model <- spark.randomForest(training, label ~ features, "classification", numTrees = 10)
+
+# Model summary
+summary(model)
+
+# Prediction
+predictions <- predict(model, test)
+showDF(predictions)
+```
+
+### Generalized linear regression
+
+
+Python:
+
+```
+from pyspark.ml.regression import GeneralizedLinearRegression
+
+# Load training data
+dataset = spark.read.format("libsvm")\
+    .load("data/mllib/sample_linear_regression_data.txt")
+
+glr = GeneralizedLinearRegression(family="gaussian", link="identity", maxIter=10, regParam=0.3)
+
+# Fit the model
+model = glr.fit(dataset)
+
+# Print the coefficients and intercept for generalized linear regression model
+print("Coefficients: " + str(model.coefficients))
+print("Intercept: " + str(model.intercept))
+
+# Summarize the model over the training set and print out some metrics
+summary = model.summary
+print("Coefficient Standard Errors: " + str(summary.coefficientStandardErrors))
+print("T Values: " + str(summary.tValues))
+print("P Values: " + str(summary.pValues))
+print("Dispersion: " + str(summary.dispersion))
+print("Null Deviance: " + str(summary.nullDeviance))
+print("Residual Degree Of Freedom Null: " + str(summary.residualDegreeOfFreedomNull))
+print("Deviance: " + str(summary.deviance))
+print("Residual Degree Of Freedom: " + str(summary.residualDegreeOfFreedom))
+print("AIC: " + str(summary.aic))
+print("Deviance Residuals: ")
+summary.residuals().show()
+```
+
+R:
+```
+irisDF <- suppressWarnings(createDataFrame(iris))
+# Fit a generalized linear model of family "gaussian" with spark.glm
+gaussianDF <- irisDF
+gaussianTestDF <- irisDF
+gaussianGLM <- spark.glm(gaussianDF, Sepal_Length ~ Sepal_Width + Species, family = "gaussian")
+
+# Model summary
+summary(gaussianGLM)
+
+# Prediction
+gaussianPredictions <- predict(gaussianGLM, gaussianTestDF)
+showDF(gaussianPredictions)
+
+# Fit a generalized linear model with glm (R-compliant)
+gaussianGLM2 <- glm(Sepal_Length ~ Sepal_Width + Species, gaussianDF, family = "gaussian")
+summary(gaussianGLM2)
+
+# Fit a generalized linear model of family "binomial" with spark.glm
+# Note: Filter out "setosa" from label column (two labels left) to match "binomial" family.
+binomialDF <- filter(irisDF, irisDF$Species != "setosa")
+binomialTestDF <- binomialDF
+binomialGLM <- spark.glm(binomialDF, Species ~ Sepal_Length + Sepal_Width, family = "binomial")
+
+# Model summary
+summary(binomialGLM)
+
+# Prediction
+binomialPredictions <- predict(binomialGLM, binomialTestDF)
+showDF(binomialPredictions)
+```
+
 
 # Data Streaming with Spark
 
-tbc.
+## First Example with socketTextStream
+
+
+### Python:
+
+To run this on your local machine, you need to first run a Netcat server
+    ```$ nc -lk 9999```
+ and then run the example
+    ```$ spark-submit network_wordcount.py localhost 9999```
+
+
+```
+from __future__ import print_function
+
+import sys
+
+from pyspark import SparkContext
+from pyspark.streaming import StreamingContext
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: network_wordcount.py <hostname> <port>", file=sys.stderr)
+        exit(-1)
+
+
+    # Create a local StreamingContext with two working thread and batch interval of 1 second    
+    sc = SparkContext(appName="PythonStreamingNetworkWordCount")
+    ssc = StreamingContext(sc, 1)
+
+
+    # Create a DStream that will connect to hostname:port, like localhost:9999
+    lines = ssc.socketTextStream(sys.argv[1], int(sys.argv[2]))
+
+    # Split each line into words etc,
+    counts = lines.flatMap(lambda line: line.split(" "))\
+                  .map(lambda word: (word, 1))\
+                  .reduceByKey(lambda a, b: a+b)
+    
+    # Print the first ten elements of each RDD generated in this DStream to the console
+    counts.pprint()
+
+    ssc.start() # Start the computation
+    ssc.awaitTermination() # Wait for the computation to terminate
+
+```
+
+### Notes with streaming
+
+After a context is defined, you have to do the following:
+
+- Define the input sources by creating input DStreams.
+- Define the streaming computations by applying transformation and output operations to DStreams.
+- Start receiving data and processing it using streamingContext.start().
+- Wait for the processing to be stopped (manually or due to any error) using streamingContext.awaitTermination().
+- The processing can be manually stopped using streamingContext.stop().
+
+Points to remember:
+
+- Once a context has been started, no new streaming computations can be set up or added to it.
+- Once a context has been stopped, it cannot be restarted.
+- Only one StreamingContext can be active in a JVM at the same time.
+stop() on StreamingContext also stops the SparkContext. To stop only the StreamingContext, set the optional parameter of stop() called stopSparkContext to false.
+- A SparkContext can be re-used to create multiple StreamingContexts, as long as the previous StreamingContext is stopped (without stopping the SparkContext) before the next StreamingContext is created.
+
+
+### Streaming sources
+
+Spark Streaming provides two categories of built-in streaming sources.
+
+- Basic sources: Sources directly available in the StreamingContext API. Examples: file systems, and socket connections.
+- Advanced sources: Sources like Kafka, Flume, Kinesis, etc. are available through extra utility classes. 
+
+
+### Streaming from SparkSQL 
+
+To run this on your local machine, you need to first run a Netcat server
+    `$ nc -lk 9999`
+ and then run the example
+    `$ bin/spark-submit examples/src/main/python/streaming/sql_network_wordcount.py localhost 9999`
+
+
+```
+from __future__ import print_function
+
+import sys
+
+from pyspark import SparkContext
+from pyspark.streaming import StreamingContext
+from pyspark.sql import Row, SparkSession
+
+
+def getSparkSessionInstance(sparkConf):
+    if ('sparkSessionSingletonInstance' not in globals()):
+        globals()['sparkSessionSingletonInstance'] = SparkSession\
+            .builder\
+            .config(conf=sparkConf)\
+            .getOrCreate()
+    return globals()['sparkSessionSingletonInstance']
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: sql_network_wordcount.py <hostname> <port> ", file=sys.stderr)
+        exit(-1)
+    host, port = sys.argv[1:]
+    sc = SparkContext(appName="PythonSqlNetworkWordCount")
+    ssc = StreamingContext(sc, 1)
+
+    # Create a socket stream on target ip:port and count the
+    # words in input stream of \n delimited text (eg. generated by 'nc')
+    lines = ssc.socketTextStream(host, int(port))
+    words = lines.flatMap(lambda line: line.split(" "))
+
+    # Convert RDDs of the words DStream to DataFrame and run SQL query
+    def process(time, rdd):
+        print("========= %s =========" % str(time))
+
+        try:
+            # Get the singleton instance of SparkSession
+            spark = getSparkSessionInstance(rdd.context.getConf())
+
+            # Convert RDD[String] to RDD[Row] to DataFrame
+            rowRdd = rdd.map(lambda w: Row(word=w))
+            wordsDataFrame = spark.createDataFrame(rowRdd)
+
+            # Creates a temporary view using the DataFrame.
+            wordsDataFrame.createOrReplaceTempView("words")
+
+            # Do word count on table using SQL and print it
+            wordCountsDataFrame = \
+                spark.sql("select word, count(*) as total from words group by word")
+            wordCountsDataFrame.show()
+        except:
+            pass
+
+    words.foreachRDD(process)
+    ssc.start()
+    ssc.awaitTermination()
+
+```
+
+### Streaming from any source using Structured Streaming Programming
+
+Check this (documentation)[http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html].
+
+```
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode
+from pyspark.sql.functions import split
+
+spark = SparkSession \
+    .builder \
+    .appName("StructuredNetworkWordCount") \
+    .getOrCreate()
+
+# Create DataFrame representing the stream of input lines from connection to localhost:9999
+lines = spark \
+    .readStream \
+    .format("socket") \
+    .option("host", "localhost") \
+    .option("port", 9999) \
+    .load()
+
+# Split the lines into words
+words = lines.select(
+   explode(
+       split(lines.value, " ")
+   ).alias("word")
+)
+
+# Generate running word count
+wordCounts = words.groupBy("word").count()
+
+# Start running the query that prints the running counts to the console
+query = wordCounts \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+
+query.awaitTermination()
+
+```
+
+#### Creating streaming DataFrames and streaming Datasets
+
+Streaming DataFrames can be created through the DataStreamReader interface (Scala/Java/Python docs) returned by SparkSession.readStream(). Similar to the read interface for creating static DataFrame, you can specify the details of the source – data format, schema, options, etc.
+
+Data Sources
+
+In Spark 2.0, there are a few built-in sources.
+
+- File source - Reads files written in a directory as a stream of data. Supported file formats are text, csv, json, parquet. See the docs of the DataStreamReader interface for a more up-to-date list, and supported options for each file format. Note that the files must be atomically placed in the given directory, which in most file systems, can be achieved by file move operations.
+
+- Kafka source - Poll data from Kafka. It’s compatible with Kafka broker versions 0.10.0 or higher. See the Kafka Integration Guide for more details.
+
+- Socket source (for testing) - Reads UTF8 text data from a socket connection. The listening server socket is at the driver. Note that this should be used only for testing as this does not provide end-to-end fault-tolerance guarantees.
+
 
 
 # BigData development environment with Spark and Hadoop
@@ -1137,7 +1480,7 @@ and change ``bind=127.0.0.1`` to ``your Server IP``.
 
 To set MongoDB and make available,  mongoDB requiere the package:  org.mongodb.spark:mongo-spark-connector_2.10:2.0.0
 
-Check the next:
+Check the next using interactive python spark:
 
 ```
 pyspark --packages org.mongodb.spark:mongo-spark-connector_2.10:2.0.0  --conf "spark.mongodb.input.uri=mongodb://172.31.30.138/marketdata.minbars" --conf "spark.mongodb.output.uri=mongodb://172.31.30.138/marketdata.minbars"  
@@ -1153,6 +1496,51 @@ Load MongoDB specific Database:
 
 ```
 df = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("uri","mongodb://172.31.30.138/marketdata.minbars").load()
+```
+
+### Creating standalone application with MongoDB support:
+
+Copy this code in your home with the name ``mongopython.py``:
+
+```
+from __future__ import print_function
+from pyspark import SparkContext
+
+import sys
+
+if __name__ == "__main__":
+
+    sc = SparkContext(appName="TestMongoDB")
+    
+    df=sc.read.format("com.mongodb.spark.sql.DefaultSource").load()
+
+    print df.printSchema()
+
+    df.write.save("s3://datasets-preditiva/results-simple/mongosaved.csv", format="csv")
+
+    sc.stop()
+
+```
+
+```
+
+from pyspark.sql import SparkSession
+
+from __future__ import print_function
+from pyspark import SparkContext
+
+import sys
+
+if __name__ == "__main__":
+
+  my_spark = SparkSession.builder.appName("myApp").config("spark.mongodb.input.uri", "mongodb://172.31.19.25/marketdata.minbars").config("spark.mongodb.output.uri", "mongodb://172.31.19.25/marketdata.minbars").getOrCreate()
+
+```
+
+
+
+```
+spark-submit --deploy-mode cluster  --master yarn  --num-executors 5  --executor-cores 5  --executor-memory 4g  --conf spark.yarn.submit.waitAppCompletion=false --conf "spark.mongodb.input.uri=mongodb://172.31.19.25/marketdata.minbars" --conf "spark.mongodb.output.uri=mongodb://172.31.19.25/marketdata.minbars" --packages org.mongodb.spark:mongo-spark-connector_2.10:2.0.0 mongopython.py
 ```
 
 
