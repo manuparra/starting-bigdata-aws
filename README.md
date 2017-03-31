@@ -1462,7 +1462,7 @@ wget http://www.barchartmarketdata.com/data-samples/mstf.csv;
 ### Importing data on MongoDB
 
 ```
-mongoimport mstf.csv --type csv --headerline -d marketdata -c minbars
+mongoimport --host 172.31.25.15 mstf.csv --type csv --headerline -d marketdata -c minbars
 ```
 
 Check if dataset is imported:
