@@ -1,7 +1,9 @@
 
 # Workshop: Setting up, Operation Analitycs, Algoritms-MachineLearnig, deployment and BigData with Amazon AWS and EMR (Elastic Map Reduce)
 
-![Prd](https://www.predictiva.io/front/img/predictiva-b.png)
+<center>
+  ![Prd](https://www.predictiva.io/front/img/predictiva-b.png)
+</center>
 
 This workshop was held for the working sessions with the company [Predictiva](Predictiva.io). The workshop covers all phases of working with Amazon's BigData platform, including: 
 
