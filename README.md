@@ -6,13 +6,15 @@
 This workshop was held for the working sessions with the company [Predictiva](Predictiva.io). The workshop covers all phases of working with Amazon's BigData platform, including: 
 
 - Setting up the initial environment for AWS (Amazon Web Services) and EMR (ElasticMapReduce), 
-- Clustering with Spark, Hadoop and multiple configurations, 
+- Creating clusters with Spark, Hadoop and multiple configurations (yarn), 
 - Working with Steps on EMR, 
-- Executing experiments and algorithms with Python, Scala and SparkR on EMR, 
+- Executing experiments and algorithms with Python, Scala and SparkR on EMR (interactive and standalone), 
 - MachineLearning and DataMining with EMR Cluster, 
-- Connecting and working with MongoDB, 
 - Basics with SparkStreaming for real time data analisys
-- ...
+- Working with MongoDB interconecting EC2 (ElasticCloud) nodes, 
+- and more (see [TOC](#table-of-contents)).
+
+![Prdheader](images/header.jpg)
 
 
 
