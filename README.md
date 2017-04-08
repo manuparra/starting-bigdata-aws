@@ -1,7 +1,21 @@
 
+# Workshop: Setting up, Operation Analitycs, Algoritms-MachineLearnig, deployment and BigData with Amazon AWS and EMR (Elastic Map Reduce)
+
+<center>![Prd](https://www.predictiva.io/front/img/predictiva-b.png)</center>
+
+This workshop was held for the working sessions with the company [Predictiva](Predictiva.io). The workshop covers all phases of working with Amazon's BigData platform, including: 
+
+- Setting up the initial environment for AWS (Amazon Web Services) and EMR (ElasticMapReduce), 
+- Clustering with Spark, Hadoop and multiple configurations, 
+- Working with Steps on EMR, 
+- Executing experiments and algorithms with Python, Scala and SparkR on EMR, 
+- MachineLearning and DataMining with EMR Cluster, 
+- Connecting and working with MongoDB, 
+- Basics with SparkStreaming for real time data analisys
+- ...
 
 
-# Predictiva. BigData setting up AWS EMR
+
 
 
 Table of Contents
@@ -471,8 +485,12 @@ Try connect with SSH:
 aws emr ssh --cluster-id <Cluster ID> --key-pair-file /home/manuparra/.ssh/PredictivaIO.pem 
 ```
 
+<<<<<<< Updated upstream
 
 ### Change Cluster Software configuration
+=======
+### Override Cluster Software configuration
+>>>>>>> Stashed changes
 
 You can override the default configurations for applications you install by supplying a configuration object when specifying applications you want installed at cluster creation time.
 
@@ -523,7 +541,11 @@ You will see Zeppelin Interactive data analytics web-site of your cluster:
 
 
 
+<<<<<<< Updated upstream
 # Submitting BigData applications to the cluster
+=======
+# Advanced operations
+>>>>>>> Stashed changes
 
 This section describes the methods for submitting work to an AWS EMR cluster. You can submit work to a cluster by adding steps or by interactively submitting Hadoop jobs to the master node. The maximum number of PENDING and ACTIVE steps allowed in a cluster is 256. You can submit jobs interactively to the master node even if you have 256 active steps running on the cluster. You can submit an unlimited number of steps over the lifetime of a long-running cluster, but only 256 steps can be ACTIVE or PENDING at any given time.
 
@@ -533,13 +555,18 @@ The spark-submit script in Spark’s bin directory is used to launch application
 
 ### Application in Python
 
+<<<<<<< Updated upstream
 
 Connect to your created Cluster via SSH and save the following code in your Cluster home with the name ``wordcount.py``:
+=======
+Install on created Cluster:
+>>>>>>> Stashed changes
 
 ```
 from __future__ import print_function
 from pyspark import SparkContext
 
+<<<<<<< Updated upstream
 import sys
 
 if __name__ == "__main__":
@@ -550,6 +577,9 @@ if __name__ == "__main__":
 
     sc = SparkContext(appName="WordCount")
     text_file = sc.textFile(sys.argv[1])
+=======
+Access to python (not ``pyspark``):
+>>>>>>> Stashed changes
 
     counts = text_file.flatMap(lambda line: line.split(" ")).map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b)
     
@@ -615,11 +645,15 @@ Provides a list of steps for the cluster in reverse order unless you specify ste
 aws emr list-steps --cluster-id j-2L74YHK3V8BCP
 ```
 
+<<<<<<< Updated upstream
 
 
 ### Cancel steps
 
 You can cancel steps using the the AWS Management Console, the AWS CLI, or the Amazon EMR API. Only steps that are PENDING can be canceled.
+=======
+And now, we can use ``python`` on ``spark``:
+>>>>>>> Stashed changes
 
 ```
 aws emr cancel-steps --cluster-id j-XXXXXXXXXXXXX --step-ids s-YYYYYYYYYY
@@ -2262,5 +2296,6 @@ from pyspark import SparkContext
 ...
 
 ```
+
 
 
