@@ -23,7 +23,7 @@ This workshop was held for the working sessions with the company [Predictiva](Pr
 Table of Contents
 =================
 
-   * [Table of Contents](#table-of-contents)
+   * [Setting up AWS](#creating-iam-credencial-required-with-aws-cli)
       * [Creating IAM credencial required with AWS CLI](#creating-iam-credencial-required-with-aws-cli)
       * [Installing AWS CLI](#installing-aws-cli)
          * [Check if AWS CLI is working](#check-if-aws-cli-is-working)
