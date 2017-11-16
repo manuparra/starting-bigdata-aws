@@ -1334,7 +1334,7 @@ if __name__ == "__main__":
 
 ### Streaming from any source using Structured Streaming Programming
 
-Check this (documentation)[http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html].
+Check this [documentation](http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html).
 
 ```
 from pyspark.sql import SparkSession
