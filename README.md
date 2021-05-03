@@ -1,5 +1,5 @@
 
-# Workshop: Setting up, Operation Analitycs, Algoritms-MachineLearnig, deployment and BigData with Amazon AWS and EMR (Elastic Map Reduce)
+# Workshop: Setting up, Operation Analitycs, Algorithms + Machine-Learnig, Deployment and BigData with Amazon AWS and EMR (Elastic Map Reduce)
 
   ![Prd](https://www.predictiva.io/front/img/predictiva-b.png)
 
